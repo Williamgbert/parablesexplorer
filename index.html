@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parables Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'garamond': ['EB Garamond', 'serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'stone-warm': '#f7f5f3',
+                        'sage': '#6b7c5a',
+                        'gold-muted': '#b8860b',
+                        'burgundy-soft': '#8b4b5c',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-stone-warm text-slate-800 font-inter">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-stone-200 sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+            <h1 class="font-garamond text-2xl sm:text-3xl md:text-4xl font-semibold text-sage text-center">
+                Parables Explorer
+            </h1>
+            <p class="text-center text-slate-600 mt-1 sm:mt-2 text-xs sm:text-sm md:text-base">
+                Discover the timeless wisdom of Jesus' teachings
+            </p>
+        </div>
+    </header>
+
+    <!-- Search and Filter -->
+    <div class="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div class="flex flex-col gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div class="w-full">
+                <input 
+                    type="text" 
+                    id="searchInput"
+                    placeholder="Search parables..."
+                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-stone-300 rounded-lg focus:ring-2 focus:ring-sage focus:border-transparent transition-all"
+                >
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <select id="themeFilter" class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-stone-300 rounded-lg focus:ring-2 focus:ring-sage focus:border-transparent">
+                    <option value="">All Themes</option>
+                    <option value="kingdom">Kingdom of God</option>
+                    <option value="grace">Grace & Forgiveness</option>
+                    <option value="judgment">Judgment & Warning</option>
+                    <option value="stewardship">Stewardship</option>
+                    <option value="love">Love & Compassion</option>
+                    <option value="faith">Faith & Prayer</option>
+                </select>
+                <button id="randomBtn" class="px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-sage text-white rounded-lg hover:bg-sage/90 transition-colors whitespace-nowrap">
+                    🎲 Random
+                </button>
+            </div>
+        </div>
+
+        <!-- Parables Container -->
+        <div id="parablesContainer" class="space-y-4 sm:space-y-6">
+            <!-- Parables will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- Reflection Modal -->
+    <div id="reflectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-3 sm:p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
+            <div class="p-4 sm:p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 id="reflectionTitle" class="font-garamond text-xl sm:text-2xl font-semibold text-sage pr-2"></h3>
+                    <button id="closeModal" class="text-slate-400 hover:text-slate-600 text-2xl sm:text-3xl flex-shrink-0">&times;</button>
+                </div>
+                <div class="mb-4 sm:mb-6">
+                    <p class="text-burgundy-soft font-medium mb-2 text-sm sm:text-base">Reflection Prompt:</p>
+                    <p class="text-slate-700 italic text-sm sm:text-base">What is God teaching me through this parable today?</p>
+                </div>
+                <textarea 
+                    id="reflectionNotes"
+                    placeholder="Write your thoughts and reflections here..."
+                    class="w-full h-32 sm:h-40 p-3 sm:p-4 text-sm sm:text-base border border-stone-300 rounded-lg focus:ring-2 focus:ring-sage focus:border-transparent resize-none"
+                ></textarea>
+                <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 mt-4">
+                    <button id="clearNotes" class="px-4 py-2 text-sm sm:text-base text-slate-600 hover:text-slate-800 transition-colors">Clear</button>
+                    <button id="saveNotes" class="px-4 sm:px-6 py-2 text-sm sm:text-base bg-sage text-white rounded-lg hover:bg-sage/90 transition-colors">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Parables data
+        const parables = [
+            {
+                id: 1,
+                title: "The Parable of the Sower",
+                reference: "Matthew 13:3-9",
+                theme: "kingdom",
+                summary: "A farmer scatters seed on different types of ground - some falls on the path, some on rocky ground, some among thorns, and some on good soil, producing varying results.",
+                commentary: "This parable teaches about how people receive God's word differently. The condition of our hearts determines how well we receive and respond to spiritual truth.",
+                churchFather: "St. John Chrysostom reminds us: 'The seed is the same everywhere, but the soil makes the difference. So too the word is the same, but the mind that receives it differs.'",
+                keywords: ["seed", "soil", "heart", "word", "growth"]
+            },
+            {
+                id: 2,
+                title: "The Good Samaritan",
+                reference: "Luke 10:25-37",
+                theme: "love",
+                summary: "A man is beaten by robbers and left for dead. A priest and Levite pass by, but a Samaritan stops to help, caring for the wounded man's needs.",
+                commentary: "Jesus redefines 'neighbor' to include anyone in need, regardless of race or religion. True love is demonstrated through compassionate action.",
+                churchFather: "St. Augustine writes: 'The wounded man is Adam; Jerusalem is the heavenly city; Jericho signifies our mortality. The Samaritan is Christ himself, who binds our wounds with the sacraments.'",
+                keywords: ["neighbor", "compassion", "mercy", "love", "help"]
+            },
+            {
+                id: 3,
+                title: "The Prodigal Son",
+                reference: "Luke 15:11-32",
+                theme: "grace",
+                summary: "A younger son demands his inheritance, wastes it in wild living, then returns home in shame. His father welcomes him with celebration, while the older brother becomes angry.",
+                commentary: "This parable reveals God's heart of forgiveness and unconditional love. It also challenges us to examine our own attitudes toward grace and restoration.",
+                churchFather: "St. Ambrose observes: 'The father did not reproach his son, but kissed him. He embraced him as if he feared he might escape again. This is the kiss of reconciliation and peace.'",
+                keywords: ["forgiveness", "grace", "father", "repentance", "celebration"]
+            },
+            {
+                id: 4,
+                title: "The Mustard Seed",
+                reference: "Matthew 13:31-32",
+                theme: "kingdom",
+                summary: "The kingdom of heaven is like a mustard seed, which is the smallest of seeds but grows into the largest garden plant, becoming a tree where birds nest.",
+                commentary: "Small beginnings can have enormous impact. God's kingdom starts small in individual hearts but grows to bless many others.",
+                churchFather: "St. Jerome teaches: 'The mustard seed is the preaching of the Gospel, which seemed small and contemptible to the world, but has grown to shelter all nations under its branches.'",
+                keywords: ["small", "growth", "kingdom", "faith", "impact"]
+            },
+            {
+                id: 5,
+                title: "The Lost Sheep",
+                reference: "Luke 15:3-7",
+                theme: "grace",
+                summary: "A shepherd leaves his 99 sheep to search for one that is lost. When he finds it, he rejoices more over the one than the 99 that never strayed.",
+                commentary: "God actively seeks those who are lost and celebrates when they return. Every individual soul matters deeply to Him.",
+                churchFather: "St. Gregory the Great explains: 'The Good Shepherd left the ninety-nine in the mountains - that is, he left the righteous angels in heaven - to seek the one lost sheep of human nature.'",
+                keywords: ["lost", "found", "shepherd", "rejoice", "seek"]
+            },
+            {
+                id: 6,
+                title: "The Talents",
+                reference: "Matthew 25:14-30",
+                theme: "stewardship",
+                summary: "A master gives talents (money) to three servants according to their abilities. Two invest and double their money, while one buries his talent out of fear.",
+                commentary: "God expects us to use our gifts and opportunities wisely. Faithful stewardship leads to greater responsibility and blessing.",
+                churchFather: "St. John Chrysostom warns: 'It is not enough to avoid evil; we must also do good. The servant was not condemned for stealing, but for not trading with what was given to him.'",
+                keywords: ["talents", "stewardship", "faithful", "investment", "responsibility"]
+            },
+            {
+                id: 7,
+                title: "The Pharisee and Tax Collector",
+                reference: "Luke 18:9-14",
+                theme: "grace",
+                summary: "Two men pray in the temple: a Pharisee who boasts of his righteousness, and a tax collector who humbly asks for mercy. The tax collector goes home justified.",
+                commentary: "Humility and genuine repentance are more valuable than religious pride. God opposes the proud but gives grace to the humble.",
+                churchFather: "St. Augustine reflects: 'The Pharisee was praying to himself, not to God. But the tax collector's prayer pierced the clouds because it came from a humble heart.'",
+                keywords: ["humility", "pride", "prayer", "mercy", "justified"]
+            },
+            {
+                id: 8,
+                title: "The Wise and Foolish Builders",
+                reference: "Matthew 7:24-27",
+                theme: "faith",
+                summary: "One man builds his house on rock, another on sand. When storms come, the house on rock stands firm while the house on sand collapses.",
+                commentary: "Hearing Jesus' words is not enough; we must put them into practice. Obedience to God's word provides a solid foundation for life.",
+                churchFather: "St. Basil the Great teaches: 'The rock is Christ and his teachings. Those who build upon this foundation will stand firm against all the storms of temptation and trial.'",
+                keywords: ["foundation", "obedience", "wisdom", "storms", "practice"]
+            },
+            {
+                id: 9,
+                title: "The Unforgiving Servant",
+                reference: "Matthew 18:21-35",
+                theme: "grace",
+                summary: "A servant owes his master an enormous debt, which is forgiven. But then he refuses to forgive a fellow servant's small debt and is punished.",
+                commentary: "Having received God's incredible forgiveness, we must extend that same grace to others. Unforgiveness reveals we haven't truly grasped God's mercy.",
+                churchFather: "St. John Chrysostom declares: 'Nothing makes us so like God as being ready to forgive the wicked and wrongdoers. For it is this that makes us like the Father in heaven.'",
+                keywords: ["forgiveness", "debt", "mercy", "grace", "compassion"]
+            },
+            {
+                id: 10,
+                title: "The Good Shepherd",
+                reference: "John 10:1-16",
+                theme: "love",
+                summary: "Jesus describes himself as the good shepherd who knows his sheep by name, leads them to pasture, and lays down his life for them.",
+                commentary: "Jesus provides personal care, protection, and guidance for his followers. His love is sacrificial and his knowledge of us is intimate.",
+                churchFather: "St. Cyril of Alexandria writes: 'Christ calls himself the Good Shepherd because he gave his life for the sheep. No hireling would do this, but only one who truly owns and loves the flock.'",
+                keywords: ["shepherd", "sheep", "protection", "sacrifice", "guidance"]
+            },
+            {
+                id: 11,
+                title: "The Wedding Banquet",
+                reference: "Matthew 22:1-14",
+                theme: "kingdom",
+                summary: "A king prepares a wedding feast, but the invited guests refuse to come. He then invites anyone from the streets, but one guest without proper attire is removed.",
+                commentary: "God's invitation to his kingdom is open to all, but it requires proper preparation and respect. Grace is free, but it transforms how we live.",
+                churchFather: "St. Gregory of Nazianzus explains: 'The wedding garment is the grace of the Spirit, the robe of righteousness. Without this, no one can sit at the King's table.'",
+                keywords: ["invitation", "kingdom", "preparation", "grace", "transformation"]
+            },
+            {
+                id: 12,
+                title: "The Persistent Widow",
+                reference: "Luke 18:1-8",
+                theme: "faith",
+                summary: "A widow persistently asks an unjust judge for justice. Though he doesn't fear God or care about people, he grants her request to stop her bothering him.",
+                commentary: "If even an unjust judge responds to persistence, how much more will our loving heavenly Father answer our prayers. We should never give up praying.",
+                churchFather: "St. Ambrose encourages: 'The widow's persistence teaches us that prayer should be constant. God delays not from cruelty, but to increase our desire and test our faith.'",
+                keywords: ["persistence", "prayer", "justice", "faith", "perseverance"]
+            },
+            {
+                id: 13,
+                title: "The Rich Fool",
+                reference: "Luke 12:16-21",
+                theme: "stewardship",
+                summary: "A rich man's land produces abundantly. He decides to build bigger barns to store his wealth, but God calls him a fool because he will die that very night.",
+                commentary: "True security doesn't come from accumulated wealth but from being rich toward God. Life is more than material possessions.",
+                churchFather: "St. Basil the Great warns: 'When someone steals another's clothes, we call them a thief. Should we not give the same name to one who could clothe the naked and does not?'",
+                keywords: ["wealth", "security", "fool", "death", "priorities"]
+            },
+            {
+                id: 14,
+                title: "The Ten Virgins",
+                reference: "Matthew 25:1-13",
+                theme: "judgment",
+                summary: "Ten bridesmaids wait for the bridegroom. Five are wise and bring extra oil for their lamps, while five are foolish and run out of oil when he arrives.",
+                commentary: "We must be prepared for Christ's return at any time. Spiritual preparation cannot be borrowed from others - it's a personal responsibility.",
+                churchFather: "St. Jerome cautions: 'The oil represents good works and the light of faith. These cannot be shared or borrowed - each soul must prepare its own lamp for the Bridegroom's coming.'",
+                keywords: ["preparation", "readiness", "wisdom", "return", "responsibility"]
+            },
+            {
+                id: 15,
+                title: "The Workers in the Vineyard",
+                reference: "Matthew 20:1-16",
+                theme: "grace",
+                summary: "A landowner hires workers at different times throughout the day but pays them all the same wage. Those hired first complain about the equal treatment.",
+                commentary: "God's grace is not based on our merit or length of service. His generosity to others should not diminish our gratitude for his kindness to us.",
+                churchFather: "St. John Chrysostom teaches: 'God's goodness is not diminished by being shared. The first workers received what was promised; they should rejoice in the master's generosity, not resent it.'",
+                keywords: ["grace", "generosity", "fairness", "gratitude", "merit"]
+            }
+        ];
+
+        let currentParables = [...parables];
+        let savedNotes = JSON.parse(localStorage.getItem('parableNotes') || '{}');
+
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const themeFilter = document.getElementById('themeFilter');
+        const randomBtn = document.getElementById('randomBtn');
+        const parablesContainer = document.getElementById('parablesContainer');
+        const reflectionModal = document.getElementById('reflectionModal');
+        const reflectionTitle = document.getElementById('reflectionTitle');
+        const reflectionNotes = document.getElementById('reflectionNotes');
+        const closeModal = document.getElementById('closeModal');
+        const saveNotes = document.getElementById('saveNotes');
+        const clearNotes = document.getElementById('clearNotes');
+
+        let currentReflectionId = null;
+
+        // Render parables
+        function renderParables(parablesToRender = currentParables) {
+            parablesContainer.innerHTML = '';
+            
+            parablesToRender.forEach(parable => {
+                const parableCard = document.createElement('div');
+                parableCard.className = 'bg-white rounded-xl shadow-sm border border-stone-200 p-4 sm:p-6 transition-all duration-300 hover:shadow-md';
+                parableCard.style.opacity = '0';
+                parableCard.style.transform = 'translateY(20px)';
+                
+                parableCard.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-2">
+                        <h2 class="font-garamond text-xl sm:text-2xl font-semibold text-sage leading-tight">${parable.title}</h2>
+                        <span class="text-xs bg-sage/10 text-sage px-2 py-1 rounded-full self-start sm:self-auto flex-shrink-0">${parable.theme}</span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <a href="https://www.biblegateway.com/passage/?search=${encodeURIComponent(parable.reference)}&version=NIV" 
+                           target="_blank" 
+                           class="text-burgundy-soft hover:text-burgundy-soft/80 font-medium text-sm transition-colors">
+                            📖 ${parable.reference}
+                        </a>
+                    </div>
+                    
+                    <p class="text-slate-700 mb-4 leading-relaxed text-sm sm:text-base">${parable.summary}</p>
+                    
+                    <div class="border-t border-stone-200 pt-4">
+                        <button class="commentary-toggle flex items-center text-sage hover:text-sage/80 font-medium text-sm transition-colors mb-3 w-full text-left" data-id="${parable.id}">
+                            <span class="toggle-icon mr-2">▶</span>
+                            Commentary & Insights
+                        </button>
+                        <div class="commentary-content hidden">
+                            <p class="text-slate-600 italic leading-relaxed mb-4 text-sm sm:text-base">${parable.commentary}</p>
+                            <div class="bg-sage/5 border-l-4 border-sage/30 p-3 sm:p-4 mb-4 rounded-r-lg">
+                                <p class="text-sage text-xs sm:text-sm font-medium mb-1">Church Father Insight:</p>
+                                <p class="text-slate-700 text-xs sm:text-sm italic leading-relaxed">${parable.churchFather}</p>
+                            </div>
+                            <button class="reflect-btn bg-gold-muted/10 text-gold-muted hover:bg-gold-muted/20 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors w-full sm:w-auto" data-id="${parable.id}">
+                                💭 Reflect on this parable
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                parablesContainer.appendChild(parableCard);
+                
+                // Animate in
+                setTimeout(() => {
+                    parableCard.style.opacity = '1';
+                    parableCard.style.transform = 'translateY(0)';
+                }, 100);
+            });
+            
+            // Add event listeners
+            addEventListeners();
+        }
+
+        // Add event listeners
+        function addEventListeners() {
+            // Commentary toggles
+            document.querySelectorAll('.commentary-toggle').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const icon = this.querySelector('.toggle-icon');
+                    
+                    if (content.classList.contains('hidden')) {
+                        content.classList.remove('hidden');
+                        content.style.maxHeight = '0';
+                        content.style.overflow = 'hidden';
+                        content.style.transition = 'max-height 0.3s ease-out';
+                        
+                        setTimeout(() => {
+                            content.style.maxHeight = content.scrollHeight + 'px';
+                        }, 10);
+                        
+                        icon.textContent = '▼';
+                    } else {
+                        content.style.maxHeight = '0';
+                        icon.textContent = '▶';
+                        
+                        setTimeout(() => {
+                            content.classList.add('hidden');
+                        }, 300);
+                    }
+                });
+            });
+            
+            // Reflection buttons
+            document.querySelectorAll('.reflect-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const parableId = parseInt(this.dataset.id);
+                    openReflectionModal(parableId);
+                });
+            });
+        }
+
+        // Search and filter functionality
+        function filterParables() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedTheme = themeFilter.value;
+            
+            currentParables = parables.filter(parable => {
+                const matchesSearch = !searchTerm || 
+                    parable.title.toLowerCase().includes(searchTerm) ||
+                    parable.summary.toLowerCase().includes(searchTerm) ||
+                    parable.commentary.toLowerCase().includes(searchTerm) ||
+                    parable.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm));
+                
+                const matchesTheme = !selectedTheme || parable.theme === selectedTheme;
+                
+                return matchesSearch && matchesTheme;
+            });
+            
+            renderParables(currentParables);
+        }
+
+        // Random parable
+        function showRandomParable() {
+            const randomParable = parables[Math.floor(Math.random() * parables.length)];
+            currentParables = [randomParable];
+            renderParables(currentParables);
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Reflection modal
+        function openReflectionModal(parableId) {
+            currentReflectionId = parableId;
+            const parable = parables.find(p => p.id === parableId);
+            
+            reflectionTitle.textContent = parable.title;
+            reflectionNotes.value = savedNotes[parableId] || '';
+            
+            reflectionModal.classList.remove('hidden');
+            reflectionModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeReflectionModal() {
+            reflectionModal.classList.add('hidden');
+            reflectionModal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+            currentReflectionId = null;
+        }
+
+        function saveReflection() {
+            if (currentReflectionId) {
+                savedNotes[currentReflectionId] = reflectionNotes.value;
+                localStorage.setItem('parableNotes', JSON.stringify(savedNotes));
+                
+                // Show success feedback
+                const saveBtn = document.getElementById('saveNotes');
+                const originalText = saveBtn.textContent;
+                saveBtn.textContent = 'Saved!';
+                saveBtn.classList.add('bg-green-600');
+                
+                setTimeout(() => {
+                    saveBtn.textContent = originalText;
+                    saveBtn.classList.remove('bg-green-600');
+                }, 2000);
+            }
+        }
+
+        function clearReflection() {
+            reflectionNotes.value = '';
+            if (currentReflectionId && savedNotes[currentReflectionId]) {
+                delete savedNotes[currentReflectionId];
+                localStorage.setItem('parableNotes', JSON.stringify(savedNotes));
+            }
+        }
+
+        // Event listeners
+        searchInput.addEventListener('input', filterParables);
+        themeFilter.addEventListener('change', filterParables);
+        randomBtn.addEventListener('click', showRandomParable);
+        closeModal.addEventListener('click', closeReflectionModal);
+        saveNotes.addEventListener('click', saveReflection);
+        clearNotes.addEventListener('click', clearReflection);
+
+        // Close modal on outside click
+        reflectionModal.addEventListener('click', function(e) {
+            if (e.target === reflectionModal) {
+                closeReflectionModal();
+            }
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !reflectionModal.classList.contains('hidden')) {
+                closeReflectionModal();
+            }
+        });
+
+        // Initialize
+        renderParables();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9809f787a4134589',t:'MTc1ODEyNjQwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
